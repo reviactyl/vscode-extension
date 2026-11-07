@@ -1,26 +1,36 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+"use strict";
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+import * as vscode from "vscode";
+import { ConnectionStore } from "./config/connectionStore";
+import { ReviactylFileSystemProvider } from "./filesystem/provider";
+import { registerCommands } from "./commands/registerCommands";
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "reviactyl" is now active!');
+export const activate = async (context: vscode.ExtensionContext): Promise<void> => {
+	const output = vscode.window.createOutputChannel("Reviactyl file system");
+	const log = (message: string): void => output.appendLine(message);
+	context.subscriptions.push(output);
+	log("[reviactyl] Extension loading..");
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('reviactyl.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Reviactyl!');
-	});
+	const connection = new ConnectionStore(context.secrets, log);
+	const fileSystem = new ReviactylFileSystemProvider(connection, log);
+	context.subscriptions.push(
+		vscode.workspace.registerFileSystemProvider("reviactyl", fileSystem, { isCaseSensitive: true }),
+		vscode.workspace.onDidChangeConfiguration(event => {
+			if (
+				event.affectsConfiguration("reviactyl-vsc.panelUrl") ||
+				event.affectsConfiguration("reviactyl-vsc.serverId") ||
+				event.affectsConfiguration("reviactyl-vsc.apiKey") ||
+				event.affectsConfiguration("reviactyl-vsc.proxyUrl")
+			) {
+				log("Connection configuration changed");
+				void connection.restore().catch(error => log("Could not restore connection: " + String(error)));
+				fileSystem.clearCaches();
+			}
+		})
+	);
 
-	context.subscriptions.push(disposable);
-}
+	await connection.restore().catch(error => log("Could not restore connection: " + String(error)));
+	registerCommands(context, connection, fileSystem, output, log);
+};
 
-// This method is called when your extension is deactivated
-export function deactivate() {}
+export const deactivate = (): void => undefined;

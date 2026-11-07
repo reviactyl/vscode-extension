@@ -19,9 +19,11 @@ export default [{
             format: ["camelCase", "PascalCase"],
         }],
 
-        curly: "warn",
-        eqeqeq: "warn",
-        "no-throw-literal": "warn",
-        semi: "warn",
+        "@typescript-eslint/consistent-type-imports": ["error", { fixStyle: "separate-type-imports" }],
+        "@typescript-eslint/no-explicit-any": "error",
+        curly: ["error", "multi-line"],
+        eqeqeq: "error",
+        "no-throw-literal": "error",
+        semi: "error",
     },
 }];

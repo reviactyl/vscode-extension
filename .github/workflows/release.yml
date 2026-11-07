@@ -1,0 +1,117 @@
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v26.*"
+
+permissions: {}
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.14.0
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Set extension version
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          VERSION="${VERSION#v}"
+
+          node - "$VERSION" <<'NODE'
+          const fs = require('fs');
+
+          const version = process.argv[2];
+          const file = 'package.json';
+          const pkg = JSON.parse(fs.readFileSync(file, 'utf8'));
+
+          pkg.version = version;
+
+          fs.writeFileSync(file, `${JSON.stringify(pkg, null, 2)}\n`);
+          NODE
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm run package:vsix
+
+      - name: Extract changelog
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          VERSION="${VERSION#v}"
+
+          node - "$VERSION" <<'NODE'
+          const fs = require('fs');
+
+          const version = process.argv[2];
+          const changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+
+          const escaped = version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+          const regex = new RegExp(
+            `^##\\s+v?${escaped}\\s*\\r?\\n([\\s\\S]*?)(?=^##\\s+|\\s*$)`,
+            'm'
+          );
+
+          const match = changelog.match(regex);
+
+          if (!match || !match[1].trim()) {
+            console.error(`No changelog entry found for ${version}`);
+            process.exit(1);
+          }
+
+          fs.writeFileSync('release-notes.md', `${match[1].trim()}\n`);
+          NODE
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          VSIX="reviactyl-${VERSION#v}.vsix"
+
+          if [ ! -f "$VSIX" ]; then
+            echo "VSIX not found: $VSIX"
+            exit 1
+          fi
+
+          gh release create "$VERSION" \
+            --draft \
+            --title "$VERSION" \
+            --notes-file release-notes.md \
+            "$VSIX"

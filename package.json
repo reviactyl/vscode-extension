@@ -1,5 +1,5 @@
 {
-  "name": "reviactyl",
+  "name": "reviactyl-vsc",
   "displayName": "Reviactyl",
   "description": "Manage your Reviactyl Server",
   "version": "26.0.0-dev",
@@ -16,9 +16,24 @@
   "contributes": {
     "commands": [
       {
+        "command": "reviactyl-vsc.editConfig",
+        "title": "Edit Extension Config File",
+        "category": "Reviactyl"
+      },
+      {
+        "command": "reviactyl-vsc.removePanel",
+        "title": "Remove Panel",
+        "category": "Reviactyl"
+      },
+      {
+        "command": "reviactyl-vsc.openPanelServer",
+        "title": "Open Reviactyl Server",
+        "category": "Reviactyl"
+      },
+      {
         "command": "reviactyl-vsc.init",
-        "title": "Setup/Connect to server",
-        "shortTitle": "Setup",
+        "title": "Add Reviactyl panel",
+        "shortTitle": "Add Panel",
         "category": "Reviactyl"
       },
       {
@@ -63,8 +78,50 @@
         "icon": "$(circle-slash)"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "reviactyl",
+          "title": "Reviactyl",
+          "icon": "./media/reviactyl.svg"
+        }
+      ]
+    },
+    "views": {
+      "reviactyl": [
+        {
+          "id": "reviactyl.panels",
+          "name": "Reviactyl"
+        }
+      ]
+    },
     "menus": {
+      "view/title": [
+        {
+          "command": "reviactyl-vsc.init",
+          "when": "view == reviactyl.panels",
+          "group": "navigation@1"
+        },
+        {
+          "command": "reviactyl-vsc.refresh",
+          "when": "view == reviactyl.panels",
+          "group": "navigation@2"
+        },
+        {
+          "command": "reviactyl-vsc.editConfig",
+          "when": "view == reviactyl.panels",
+          "group": "navigation@3"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "reviactyl-vsc.removePanel",
+          "when": "view == reviactyl.panels && viewItem == reviactylPanel",
+          "group": "inline"
+        }
+      ],
       "commandPalette": [
+        { "command": "reviactyl-vsc.editConfig" },
         {
           "command": "reviactyl-vsc.init"
         },
@@ -120,6 +177,10 @@
         "view": "explorer",
         "contents": "Open a Reviactyl server folder as a remote workspace.\n[Add Reviactyl panel](command:reviactyl-vsc.init)",
         "when": "workspaceFolderCount == 0"
+      },
+      {
+        "view": "reviactyl.panels",
+        "contents": "Add a Reviactyl panel to browse its servers and live status.\n[Add Panel](command:reviactyl-vsc.init)  [Edit Extension Config File](command:reviactyl-vsc.editConfig)"
       }
     ],
     "configuration": {
@@ -131,6 +192,25 @@
           "description": "Reviactyl panel URL to connect to.",
           "format": "uri"
         },
+        "reviactyl-vsc.panels": {
+          "type": "array",
+          "default": [],
+          "description": "Configured Reviactyl panels. API keys are stored separately in VS Code SecretStorage.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "panelUrl": { "type": "string", "format": "uri" }
+            },
+            "required": ["id", "name", "panelUrl"]
+          }
+        },
+        "reviactyl-vsc.activePanelId": {
+          "type": "string",
+          "default": "",
+          "description": "ID of the active named panel."
+        },
         "reviactyl-vsc.apiKey": {
           "type": "string",
           "default": "",
@@ -138,7 +218,7 @@
           "deprecationMessage": "API keys are now stored securely in VS Code SecretStorage.",
           "minLength": 48,
           "maxLength": 48,
-          "pattern": "^ptlc_[a-zA-Z0-9]{43}$",
+          "pattern": "^rtlc_[a-zA-Z0-9]{43}$",
           "patternErrorMessage": "Invalid client API key."
         },
         "reviactyl-vsc.serverId": {

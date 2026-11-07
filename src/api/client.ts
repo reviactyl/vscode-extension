@@ -11,6 +11,10 @@ export interface ServerSummary {
 	}
 }
 
+export interface ServerResources {
+	readonly attributes: { readonly current_state: string; readonly is_suspended: boolean }
+}
+
 export interface FileEntry {
 	readonly attributes: {
 		readonly name: string
@@ -62,6 +66,10 @@ export class ReviactylApiClient {
 		const result = await this.requestJson<ApiList<ServerSummary>>(this.apiBaseUrl + "/");
 		if (!Array.isArray(result.data)) {throw new ApiError("The panel returned an invalid server list.", 200);}
 		return result.data;
+	}
+
+	public async getServerResources(serverId: string): Promise<ServerResources> {
+		return this.requestJson<ServerResources>(this.serverUrl(serverId, "/resources"));
 	}
 
 	public async listFiles(serverId: string, directory: string): Promise<FileEntry[]> {

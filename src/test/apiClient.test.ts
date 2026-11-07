@@ -36,6 +36,18 @@ test("listFiles uses the server short identifier and encodes the directory query
 	assert.equal(request.init?.method, "GET");
 });
 
+test("getServerResources reads live status using the server short identifier", async () => {
+	const { fetchImplementation, requests } = createFetch(() => new Response(JSON.stringify({
+		attributes: { current_state: "running", is_suspended: false }
+	}), { status: 200, headers: { "Content-Type": "application/json" } }));
+	const client = new ReviactylApiClient({ panelUrl: "https://panel.example.test", apiKey: "secret", fetchImplementation });
+
+	const resources = await client.getServerResources("c8778132");
+	assert.equal(String(requests[0].input), "https://panel.example.test/api/client/servers/c8778132/resources");
+	assert.equal(resources.attributes.current_state, "running");
+	assert.equal(resources.attributes.is_suspended, false);
+});
+
 test("writeFile sends raw bytes and includes the file path in the query", async () => {
 	const { fetchImplementation, requests } = createFetch(() => new Response(null, { status: 204 }));
 	const client = new ReviactylApiClient({ panelUrl: "https://panel.example.test", apiKey: "secret", fetchImplementation });

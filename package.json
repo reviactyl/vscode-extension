@@ -91,7 +91,8 @@
       "reviactyl": [
         {
           "id": "reviactyl.panels",
-          "name": "Reviactyl"
+          "name": "Reviactyl",
+          "icon": "./media/reviactyl.svg"
         }
       ]
     },

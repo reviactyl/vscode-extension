@@ -1,71 +1,30 @@
-# reviactyl README
+# Reviactyl VSCode
 
-This is the README for your extension "reviactyl". After writing up a brief description, we recommend including the following sections.
+Browse, Edit, Manage your servers' files directly from VS Code.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- Edit, Create, Rename, Delete, Upload files through VS Code.
+- Start, Stop, Restart, Kill your server from VS Code.
+- Multi-Panel Profiles.
+- Easily switch between servers through VS Code User Interface.
+- View your Reviactyl server state.
 
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+| Server/Panel Profiles | File Editor UI |
+|---|---|
+| ![First](https://github.com/user-attachments/assets/6de533ee-747f-4152-a50f-b18e0d0e1a34) | ![Second](https://github.com/user-attachments/assets/200f2077-49dd-40ce-b65e-6993c92e48cd) |
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- Visual Studio Code `1.140.0+`
+- Panel running Reviactyl `v26` or higher.
 
-## Extension Settings
+## Development
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+```
+pnpm install
+```
 
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+```
+pnpm watch
+```

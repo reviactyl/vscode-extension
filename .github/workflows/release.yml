@@ -103,15 +103,21 @@ jobs:
         run: |
           set -euo pipefail
 
-          VSIX="reviactyl-${VERSION#v}.vsix"
+          VERSION="${VERSION#v}"
 
-          if [ ! -f "$VSIX" ]; then
-            echo "VSIX not found: $VSIX"
+          SOURCE="reviactyl-vsc-${VERSION}.vsix"
+          TARGET="reviactyl-${VERSION}.vsix"
+
+          if [ ! -f "$SOURCE" ]; then
+            echo "VSIX not found: $SOURCE"
             exit 1
           fi
 
-          gh release create "$VERSION" \
+          mv "$SOURCE" "$TARGET"
+
+          gh release create "v${VERSION}" \
             --draft \
-            --title "$VERSION" \
+            --title "v${VERSION}" \
             --notes-file release-notes.md \
-            "$VSIX"
+            "$TARGET"
+
